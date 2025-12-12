@@ -19,38 +19,42 @@ set "crel=%~f1"
 
 if not "%crel%"=="" (
 	if exist "%crel%\*" (
-REM		echo From: %cd%
-		echo Folder to chmod: %crel%
-		del "%clst%" %fquiet%
-		echo Scanning for executable files...
-		for %%a in (bash bat bin cmd com cpl dll elf exe gadget hta inf1 ins inx isu job js jse lnk mbn msc msi msp mst paf pif ps1 reg rgs scr sct sh shb shs u3p vb vbe vbs vbscript vsix ws wsf wsh xpi) do (
-			dir %carg% /S "%crel%\*.%%a">>"%clst%" 2>nul
-		)
-		sort "%clst%">"%clst%.sorted"
-REM		pause
-
-		rem If files found
-		if exist "%clst%.sorted" (
-			rem For all files found
-			for /f "delims=" %%i in (%clst%.sorted) do (
-				pushd "!crel!"
-
-REM				echo %%i
-				set "vdir=%%i"
-				if exist "!vdir!" (
-					echo !vdir!
-					git update-index --chmod=+x "!vdir!"
-				)
-				popd
-			)
-			echo Done...
-
-			rem Delete files list
+		if exist "%crel%\.git\*" (
+REM			echo From: %cd%
+			echo Folder to chmod: %crel%
 			del "%clst%" %fquiet%
-			del "%clst%.sorted" %fquiet%
-		) else (
-			echo No file to update found...
+			echo Scanning for executable files...
+			for %%a in (bash bat bin cmd com cpl dll elf exe gadget hta inf1 ins inx isu job js jse lnk mbn msc msi msp mst paf pif ps1 reg rgs scr sct sh shb shs u3p vb vbe vbs vbscript vsix ws wsf wsh xpi) do (
+				rem	"https://www.robvanderwoude.com/battech_wildcards.php"
+				rem	"https://devblogs.microsoft.com/oldnewthing/20071217-00/?p=24143"
+				rem	"https://learn.microsoft.com/fr-fr/archive/blogs/jeremykuhne/wildcards-in-windows"
+				dir %carg% /S "%crel%\*.%%a" 2>nul|findstr /le ".%%a"|findstr /v "_OLD">>"%clst%" 2>nul
 			)
+			sort "%clst%">"%clst%.sorted"
+REM			pause
+
+			if exist "%clst%.sorted" (
+				rem For all files found
+				for /f "delims=" %%i in (%clst%.sorted) do (
+					pushd "!crel!"
+						set "vdir=%%i"
+						if exist "!vdir!" (
+							echo !vdir!
+							git update-index --chmod=+x "!vdir!" 2>nul
+						)
+					popd
+				)
+				echo Done...
+
+				rem Delete files list
+				del "%clst%" %fquiet%
+				del "%clst%.sorted" %fquiet%
+			) else (
+				echo No file to update found...
+				)
+		) else (
+			echo Folder provided not a Git repository...
+		)
 	) else (
 		echo Folder provided doesn't exist...
 	)
