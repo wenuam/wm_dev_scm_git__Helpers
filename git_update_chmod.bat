@@ -20,6 +20,7 @@ set "crel=%~f1"
 if not "%crel%"=="" (
 	if exist "%crel%\*" (
 		if exist "%crel%\.git\*" (
+			git -v
 REM			echo From: %cd%
 			echo Folder to chmod: %crel%
 			del "%clst%" %fquiet%
@@ -47,11 +48,11 @@ REM			pause
 				echo Done...
 
 				rem Delete files list
-				del "%clst%" %fquiet%
 				del "%clst%.sorted" %fquiet%
 			) else (
 				echo No file to update found...
-				)
+			)
+			del "%clst%" %fquiet%
 		) else (
 			echo Folder provided not a Git repository...
 		)
